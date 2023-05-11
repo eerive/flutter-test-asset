@@ -1,5 +1,7 @@
 # flutter_test_image_asset
 
+Reference issue: https://github.com/flutter/flutter/issues/126612
+
 To reproduce the 'Message corrupted' error, run any of the two tests inside the /test folder.
 
 
