@@ -5,13 +5,13 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_test_image_asset/main.dart';
 
 void main() {
-  testWidgets('Load test asset bundle with a fallback image as resource',
+  testWidgets('Load test asset bundle as platform asset bundle ',
       (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Material(
           child: DefaultAssetBundle(
-            bundle: TestAssetBundleLoadRes(),
+            bundle: TestAssetBundlePlatform(),
             child: const MyHomePage(
               title: 'test',
             ),
@@ -22,7 +22,8 @@ void main() {
 
     expect(find.byKey(const Key("IMAGE_TEST")), findsOneWidget);
   });
-  testWidgets('Load test asset bundle with a fallback image as resource',
+  testWidgets(
+      'Load test asset bundle as caching asset bundle', //note: this will surely fail
       (WidgetTester tester) async {
     await tester.pumpWidget(
       MaterialApp(
@@ -41,14 +42,21 @@ void main() {
   });
 }
 
-/// Default asset bundle for tests. Fixes an error when asset images are being used for tests
-/// Needs to have a fallback.jpg file in the lib/assets folder.
-class TestAssetBundleLoadRes extends CachingAssetBundle {
-//TODO: using this with a default asset bundle will create the 'Message corrupted' exception
+/// This bundle will work by using the [PlatformAssetBundle]
+/// instead of [CachingAssetBundle].
+class TestAssetBundlePlatform extends PlatformAssetBundle {
   @override
   Future<ByteData> load(String key) async {
-    ByteData bytes = await rootBundle.load("lib/assets/fallback.jpg");
-    return bytes;
+    // Matches "AssetManifest.json", "AssetManifest.bin", and "AssetManifest.smcbin"
+    if (key.startsWith('AssetManifest')) {
+      return super.load(key);
+    }
+
+    if (key == 'lib/assets/fallback.jpg') {
+      return await rootBundle.load("lib/assets/fallback.jpg");
+    }
+
+    throw Exception('Unexpected key: $key');
   }
 }
 
